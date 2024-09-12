@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitda89eef54c810448a827ed04bb3da82f
+class ComposerStaticInitb4f9a58564d4079838a65f398d2f0fe1
 {
     public static $files = array (
         'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
@@ -653,9 +653,11 @@ class ComposerStaticInitda89eef54c810448a827ed04bb3da82f
     );
 
     public static $classMap = array (
+        'App\\Admin\\Controllers\\AdminRoleController' => __DIR__ . '/../..' . '/app/Admin/Controllers/AdminRoleController.php',
         'App\\Admin\\Controllers\\AgentAllocationController' => __DIR__ . '/../..' . '/app/Admin/Controllers/AgentAllocationController.php',
         'App\\Admin\\Controllers\\AgentController' => __DIR__ . '/../..' . '/app/Admin/Controllers/AgentController.php',
         'App\\Admin\\Controllers\\AssignAgentsController' => __DIR__ . '/../..' . '/app/Admin/Controllers/AssignAgentsController.php',
+        'App\\Admin\\Controllers\\AssignOrganisationAdminController' => __DIR__ . '/../..' . '/app/Admin/Controllers/AssignOrganisationAdminController.php',
         'App\\Admin\\Controllers\\AssociationController' => __DIR__ . '/../..' . '/app/Admin/Controllers/AssociationController.php',
         'App\\Admin\\Controllers\\AuthController' => __DIR__ . '/../..' . '/app/Admin/Controllers/AuthController.php',
         'App\\Admin\\Controllers\\CounsellingCentreController' => __DIR__ . '/../..' . '/app/Admin/Controllers/CounsellingCentreController.php',
@@ -682,6 +684,7 @@ class ComposerStaticInitda89eef54c810448a827ed04bb3da82f
         'App\\Admin\\Controllers\\MeetingController' => __DIR__ . '/../..' . '/app/Admin/Controllers/MeetingController.php',
         'App\\Admin\\Controllers\\MembersController' => __DIR__ . '/../..' . '/app/Admin/Controllers/MembersController.php',
         'App\\Admin\\Controllers\\NewsPostController' => __DIR__ . '/../..' . '/app/Admin/Controllers/NewsPostController.php',
+        'App\\Admin\\Controllers\\OrganisationAdminController' => __DIR__ . '/../..' . '/app/Admin/Controllers/OrganisationAdminController.php',
         'App\\Admin\\Controllers\\OrganizationAllocationController' => __DIR__ . '/../..' . '/app/Admin/Controllers/OrganizationAllocationController.php',
         'App\\Admin\\Controllers\\OrganizationController' => __DIR__ . '/../..' . '/app/Admin/Controllers/OrganizationController.php',
         'App\\Admin\\Controllers\\ParticipantController' => __DIR__ . '/../..' . '/app/Admin/Controllers/ParticipantController.php',
@@ -777,8 +780,10 @@ class ComposerStaticInitda89eef54c810448a827ed04bb3da82f
         'App\\Models\\LoanTransaction' => __DIR__ . '/../..' . '/app/Models/LoanTransaction.php',
         'App\\Models\\Location' => __DIR__ . '/../..' . '/app/Models/Location.php',
         'App\\Models\\Meeting' => __DIR__ . '/../..' . '/app/Models/Meeting.php',
+        'App\\Models\\MemberCycleDetails' => __DIR__ . '/../..' . '/app/Models/MemberCycleDetails.php',
         'App\\Models\\MemberPosition' => __DIR__ . '/../..' . '/app/Models/MemberPosition.php',
         'App\\Models\\NewsPost' => __DIR__ . '/../..' . '/app/Models/NewsPost.php',
+        'App\\Models\\OrgAllocation' => __DIR__ . '/../..' . '/app/Models/OrgAllocation.php',
         'App\\Models\\Organization' => __DIR__ . '/../..' . '/app/Models/Organization.php',
         'App\\Models\\OrganizationAssignment' => __DIR__ . '/../..' . '/app/Models/OrganizationAssignment.php',
         'App\\Models\\Parish' => __DIR__ . '/../..' . '/app/Models/Parish.php',
@@ -921,8 +926,18 @@ class ComposerStaticInitda89eef54c810448a827ed04bb3da82f
         'Cron\\MinutesField' => __DIR__ . '/..' . '/dragonmantank/cron-expression/src/Cron/MinutesField.php',
         'Cron\\MonthField' => __DIR__ . '/..' . '/dragonmantank/cron-expression/src/Cron/MonthField.php',
         'Database\\Factories\\UserFactory' => __DIR__ . '/../..' . '/database/factories/UserFactory.php',
+        'Database\\Seeders\\AdminMenuSeeder' => __DIR__ . '/../..' . '/database/seeders/AdminMenuSeeder.php',
         'Database\\Seeders\\DatabaseSeeder' => __DIR__ . '/../..' . '/database/seeders/DatabaseSeeder.php',
+        'Database\\Seeders\\DefaultUserSeeder' => __DIR__ . '/../..' . '/database/seeders/DefaultUserSeeder.php',
+        'Database\\Seeders\\GensSeeder' => __DIR__ . '/../..' . '/database/seeders/GensSeeder.php',
+        'Database\\Seeders\\IndexSeeder' => __DIR__ . '/../..' . '/database/seeders/IndexSeeder.php',
         'Database\\Seeders\\OrganizationSeeder' => __DIR__ . '/../..' . '/database/seeders/OrganizationSeeder.php',
+        'Database\\Seeders\\PermissionSeeder' => __DIR__ . '/../..' . '/database/seeders/PermissionSeeder.php',
+        'Database\\Seeders\\RoleMenuSeeder' => __DIR__ . '/../..' . '/database/seeders/RoleMenuSeeder.php',
+        'Database\\Seeders\\RolePermissionSeeder' => __DIR__ . '/../..' . '/database/seeders/RolePermissionSeeder.php',
+        'Database\\Seeders\\RoleSeeder' => __DIR__ . '/../..' . '/database/seeders/RoleSeeder.php',
+        'Database\\Seeders\\RoleUserSeeder' => __DIR__ . '/../..' . '/database/seeders/RoleUserSeeder.php',
+        'Database\\Seeders\\UserPermissionSeeder' => __DIR__ . '/../..' . '/database/seeders/UserPermissionSeeder.php',
         'DeepCopy\\DeepCopy' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/DeepCopy.php',
         'DeepCopy\\Exception\\CloneException' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/Exception/CloneException.php',
         'DeepCopy\\Exception\\PropertyException' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/Exception/PropertyException.php',
@@ -7134,10 +7149,10 @@ class ComposerStaticInitda89eef54c810448a827ed04bb3da82f
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitda89eef54c810448a827ed04bb3da82f::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitda89eef54c810448a827ed04bb3da82f::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitda89eef54c810448a827ed04bb3da82f::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInitda89eef54c810448a827ed04bb3da82f::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitb4f9a58564d4079838a65f398d2f0fe1::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitb4f9a58564d4079838a65f398d2f0fe1::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitb4f9a58564d4079838a65f398d2f0fe1::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitb4f9a58564d4079838a65f398d2f0fe1::$classMap;
 
         }, null, ClassLoader::class);
     }

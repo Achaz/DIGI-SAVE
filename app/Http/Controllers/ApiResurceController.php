@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\AgentMeeting;
+use App\Models\Agent;
+use App\Models\AgentAllocation;
 use App\Models\Association;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +31,7 @@ use App\Models\MemberPosition;
 use App\Models\Organization;
 use App\Models\Parish;
 use App\Models\ServiceProvider;
+use App\Models\Shareout;
 use App\Models\ShareRecord;
 use App\Models\SocialFund;
 use App\Models\User;
@@ -249,6 +253,8 @@ class ApiResurceController extends Controller
         $share_record->number_of_shares = $r->number_of_shares;
         $share_record->created_by_id = $admin->id;
 
+        
+
         try {
             $share_record->save();
         } catch (\Throwable $th) {
@@ -260,6 +266,7 @@ class ApiResurceController extends Controller
             200
         );
     }
+
 
     public function socialFundCreate(Request $request)
     {
@@ -336,6 +343,51 @@ class ApiResurceController extends Controller
         return $this->success(
             $socialFund,
             $message = "Social fund record created successfully",
+            200
+        );
+    }
+
+    public function request_agent_otp_sms(Request $r)
+    {
+
+        $r->validate([
+            'phone_number' => 'required',
+        ]);
+
+        $phone_number = Utils::prepare_phone_number($r->phone_number);
+        if (!Utils::phone_number_is_valid($phone_number)) {
+            return $this->error('Invalid phone number.');
+        }
+        $acc = Agent::where(['phone_number' => $phone_number])->first();
+        // if ($acc == null) {
+        //     $acc = Agent::where(['username' => $phone_number])->first();
+        // }
+        if ($acc == null) {
+            return $this->error('Account not found.');
+        }
+        $otp = rand(10000, 99999) . "";
+        if (
+            str_contains($phone_number, '256783204665') ||
+            str_contains(strtolower($acc->first_name), 'test') ||
+            str_contains(strtolower($acc->last_name), 'test')
+        ) {
+            $otp = '12345';
+        }
+
+        $resp = null;
+        try {
+            $resp = Utils::send_sms($phone_number, $otp . ' is your Digisave OTP.');
+        } catch (Exception $e) {
+            return $this->error('Failed to send OTP  because ' . $e->getMessage() . '');
+        }
+        if ($resp != 'success') {
+            return $this->error('Failed to send OTP  because ' . $resp . '');
+        }
+        $acc->password = password_hash($otp, PASSWORD_DEFAULT);
+        $acc->save();
+        return $this->success(
+            $otp . "",
+            $message = "OTP sent successfully.",
             200
         );
     }
@@ -595,6 +647,15 @@ class ApiResurceController extends Controller
     {
         return $this->success(
             Sacco::where([])->orderby('id', 'desc')->get(),
+            $message = "Sussess",
+            200
+        );
+    }
+
+    public function agent_allocations(Request $r)
+    {
+        return $this->success(
+            AgentAllocation::where([])->orderby('id', 'desc')->get(),
             $message = "Sussess",
             200
         );
@@ -1290,6 +1351,58 @@ class ApiResurceController extends Controller
             200
         );
     }
+
+    
+    public function scheduleMeeting(Request $request)
+    {
+        $admin = auth('api')->user();
+        if ($admin == null) {
+            return $this->error('User not found.');
+        }
+        if ($request->user_id == null) {
+            return $this->error('User not found.');
+        }
+        $u = User::find($request->user_id);
+            // Create a new meeting using the AgentMeeting model
+            $meeting = new AgentMeeting();
+            $meeting->user_id = $u->id;
+            $meeting->sacco_id = $request->input('sacco_id');
+            $meeting->meeting_date = $request->input('meeting_date');
+            $meeting->meeting_time = $request->input('meeting_time');
+            $meeting->meeting_description = $request->input('meeting_description');
+           
+
+            try {
+                $meeting->save();
+            } catch (\Throwable $th) {
+                return $this->error('Failed to schedule meeting record, because ' . $th->getMessage() . '');
+            }
+            return $this->success(
+                $meeting,
+                $message = "Success",
+                200
+            );
+    }
+
+    public function get_agent_meetings(Request $request)
+{
+    $user = auth('api')->user();
+    if (!$user) {
+        return $this->error('User not found.');
+    }
+
+    // Retrieve meetings associated with the logged-in user
+    $meetings = AgentMeeting::where('user_id', $user->id)->get();
+
+    if ($meetings->isEmpty()) {
+        return $this->error('No meetings found for the user.');
+    }
+
+    return $this->success($meetings, $message="Meetings retrieved successfully", 200);
+}
+
+    
+
     public function cycles_create(Request $r)
     {
 
@@ -1963,4 +2076,116 @@ class ApiResurceController extends Controller
             return response()->json(['error' => 'Failed to fetch sacco data: ' . $e->getMessage()], 500);
         }
     }
+
+    public function getMemberDetailsByCycle(Request $request)
+{
+    try {
+        $user = auth('api')->user();
+
+        if ($user === null) {
+            return $this->error('User not found.');
+        }
+
+        $sacco = Sacco::where('id', $user->sacco_id)->first();
+
+        if ($sacco === null) {
+            return $this->error('Sacco not found.');
+        }
+
+        $cycles = Cycle::where('sacco_id', $sacco->id)->get();
+
+        $memberDetails = [];
+
+        foreach ($cycles as $cycle) {
+            $members = User::where('sacco_id', $sacco->id)->get();
+            foreach ($members as $member) {
+                $memberData = [
+                    'cycle_id' => $cycle->id,
+                    'user_id' => $member->id,
+                    'name' => $member->name,
+                    'shares' => ShareRecord::where('user_id', $member->id)
+                        ->where('cycle_id', $cycle->id)
+                        ->sum('total_amount') /($sacco->share_price),
+                    'loans' => Transaction::where('user_id', $member->id)
+                                               ->where('cycle_id', $cycle->id)
+                                               ->where('type', 'LOAN')
+                                               ->sum('amount'),
+                    'loan_repayments' => Transaction::where('user_id', $member->id)
+                                                         ->where('cycle_id', $cycle->id)
+                                                         ->where('type', 'LOAN_REPAYMENT')
+                                                         ->sum('amount'),
+                    'fines' => Transaction::where('user_id', $member->id)
+                                          ->where('cycle_id', $cycle->id)
+                                          ->where('type', 'FINE')
+                                          ->sum('amount'),
+                    'share_out_money' => Shareout::where('member_id', $member->id)
+                                          ->where('cycle_id', $cycle->id)
+                                          ->sum('shareout_amount'),
+            
+                ];
+
+                $memberDetails[] = $memberData;
+            }
+        }
+
+        return $this->success($memberDetails, 'Member details fetched successfully.', 200);
+    } catch (Exception $e) {
+        return $this->error($e->getMessage(), $e->getCode());
+    } catch (Throwable $e) {
+        return $this->error('Something went wrong.', 500);
+    }
+}
+
+
+    public function agent_saccos($saccoIds)
+{
+    $villageAgent = auth('village_agents')->user();
+
+    if ($villageAgent == null) {
+        return $this->error('Village agent not found.');
+    }
+
+    // Convert the comma-separated string to an array of integers
+    $saccoIdsArray = explode(',', $saccoIds);
+    $saccoIdsArray = array_map('intval', $saccoIdsArray);
+
+    if (empty($saccoIdsArray)) {
+        return $this->error('No Sacco IDs provided.');
+    }
+
+    $saccos = Sacco::whereIn('id', $saccoIdsArray)->get();
+
+    // Return the response
+    return $this->success(
+        $saccos,
+        $message = "Saccos fetched successfully.",
+        $statusCode = 200
+    );
+}
+
+//     public function agent_saccos(Request $request)
+// {
+//     $villageAgent = auth('village_agents')->user();
+
+//     if ($villageAgent == null) {
+//         return $this->error('Village agent not found.');
+//     }
+
+//     // Extract the list of Sacco IDs from the request query parameters
+//     $saccoIds = $request->input('sacco_ids', []);
+
+//     if (empty($saccoIds)) {
+//         return $this->error('No Sacco IDs provided.');
+//     }
+
+//     $saccos = Sacco::whereIn('id', $saccoIds)->get();
+
+//     // Return the response
+//     return $this->success(
+//         $saccos,
+//         $message = "Saccos fetched successfully.",
+//         $statusCode = 200
+//     );
+// }
+
 }

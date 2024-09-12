@@ -2,6 +2,8 @@
 
 namespace App\Admin\Controllers;
 
+use App\Models\Organization;
+use App\Models\OrganizationAssignment;
 use App\Models\Sacco;
 use Encore\Admin\Auth\Database\Administrator;
 use Encore\Admin\Controllers\AdminController;
@@ -30,13 +32,23 @@ class SaccoController extends AdminController
 
         $u = Admin::user();
         if (!$u->isRole('admin')) {
-            $grid->model()->where('administrator_id', $u->id);
-            $grid->disableCreateButton();
-            //dsable delete
-            $grid->actions(function (Grid\Displayers\Actions $actions) {
-                $actions->disableDelete();
-            });
-            $grid->disableFilter();
+            if ($u->isRole('org')) {
+                // Retrieve the organization IDs assigned to the admin user
+                $orgIds = Organization::where('agent_id', $u->id)->pluck('id')->toArray();
+                // Retrieve the sacco IDs associated with the organization IDs
+                $saccoIds = OrganizationAssignment::whereIn('organization_id', $orgIds)->pluck('sacco_id')->toArray();
+                // Filter Saccos based on the retrieved sacco IDs
+                $grid->model()->whereIn('id', $saccoIds);
+            
+                // Non-admin users other than type 5 users
+                // $grid->model()->where('administrator_id', $u->id);
+                $grid->disableCreateButton();
+                // Disable delete
+                $grid->actions(function (Grid\Displayers\Actions $actions) {
+                    $actions->disableDelete();
+                });
+                $grid->disableFilter();
+            }
         }
         $grid->disableBatchActions();
         $grid->quickSearch('name')->placeholder('Search by name');
@@ -49,7 +61,7 @@ class SaccoController extends AdminController
                 return number_format($price);
             })->sortable(); 
         $grid->column('physical_address', __('Physical address'))->sortable();
-        $grid->column('establishment_date', __('Established'))
+        $grid->column('created_at', __('Established'))
             ->display(function ($date) {
                 return date('d M Y', strtotime($date));
             })->sortable();
@@ -83,7 +95,7 @@ class SaccoController extends AdminController
         $show->field('phone_number', __('Phone number'));
         $show->field('email_address', __('Email address'));
         $show->field('physical_address', __('Physical address'));
-        $show->field('establishment_date', __('Establishment date'));
+        $show->field('created_at', __('Establishment date'));
         $show->field('registration_number', __('Registration number'));
         $show->field('chairperson_name', __('Chairperson name'));
         $show->field('chairperson_phone_number', __('Chairperson phone number'));
@@ -120,7 +132,7 @@ class SaccoController extends AdminController
                     . "&search_by_2=id"
                     . "&model=User"
             );
-            $form->select('administrator_id', "Sacco Administrator")
+            $form->select('administrator_id', "Group Administrator")
                 ->options(function ($id) {
                     $a = Administrator::find($id);
                     if ($a) {
@@ -139,17 +151,8 @@ class SaccoController extends AdminController
         $form->text('phone_number', __('Phone number'))->rules('required');
         $form->text('email_address', __('Email address'));
         $form->text('physical_address', __('Physical address'));
-        $form->datetime('establishment_date', __('Establishment date'))->rules('required');
-        $form->text('registration_number', __('Registration number'));
-        $form->text('chairperson_name', __('Chairperson name'))->rules('required');
-        $form->text('chairperson_phone_number', __('Chairperson phone number'))->rules('required');
-        $form->text('chairperson_email_address', __('Chairperson email address'));
-        $form->text('mission', __('Mission'))->rules('required');
-        $form->text('vision', __('Vision'))->rules('required');
-        $form->textarea('about', __('About'))->rules('required');
-
-        $form->quill('terms', __('Sacco Terms'))->rules('required');
-        $form->image('logo', __('Sacco Logo'))->rules('required');
+        $form->datetime('created_at', __('Establishment date'))->rules('required');
+        $form->image('logo', __('VSLA Logo'));
 
         return $form;
     }

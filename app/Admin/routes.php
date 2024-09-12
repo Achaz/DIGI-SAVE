@@ -16,14 +16,19 @@ Route::group([
     $router->get('/', 'HomeController@index')->name('home');
     $router->resource('gens', GenController::class);
     $router->resource('saccos', SaccoController::class);
+    $router->resource('districts', DistrictsController::class);
+    $router->post('districts/import-csv', 'DistrictsController@importCsv')->name('districts.import.csv');
     $router->resource('agents', AgentController::class);
     $router->resource('organisation', OrganizationController::class);
+    $router->resource('org-admin', OrganisationAdminController::class);
+    $router->resource('assign-org-admin', AssignOrganisationAdminController::class);
     $router->resource('assign-org', OrganizationAllocationController::class);
     $router->resource('assign-agent', AssignAgentsController::class);
     $router->resource('loan-scheems', LoanScheemController::class);
     $router->resource('loans', LoanController::class);
     $router->resource('meetings', MeetingController::class);
     $router->resource('loan-transactions', LoanTransactionController::class);
+    $router->resource('admin-roles', AdminRoleController::class);
 
     /* ========================START OF NEW THINGS===========================*/
 

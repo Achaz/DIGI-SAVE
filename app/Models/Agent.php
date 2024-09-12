@@ -41,6 +41,21 @@ class Agent extends Authenticatable implements JWTSubject
         });
     }
 
+    protected $appends = [
+        'token',
+        'sacco_data'
+    ];
+
+     /**
+     * Get the custom token attribute.
+     *
+     * @return string
+     */
+    public function getTokenAttribute()
+    {
+        return $this->remember_token;
+    }
+
        /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *
@@ -61,19 +76,82 @@ class Agent extends Authenticatable implements JWTSubject
         return [];
     }
 
-    // protected $appends = [
-    //     'sacco_id',
-    // ];
+        /**
+     * Get the password for the user.
+     *
+     * @return string
+     */
+    public function getAuthPassword()
+    {
+        return $this->password;
+    }
 
-    // public function agentAllocation()
-    // {
-    //     return $this->hasOne(AgentAllocation::class, 'agent_id', 'id');
-    // }
+    /**
+     * Get the unique identifier for the user.
+     *
+     * @return mixed
+     */
+    public function getAuthIdentifierName()
+    {
+        return 'id';
+    }
 
-    // public function getSaccoIdAttribute()
-    // {
-    //     return optional($this->agentAllocation)->sacco_id;
-    // }
+    /**
+     * Get the unique identifier for the user.
+     *
+     * @return mixed
+     */
+    public function getAuthIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Get the token value for the "remember me" session.
+     *
+     * @return string
+     */
+    public function getRememberToken()
+    {
+        return $this->remember_token;
+    }
+
+    /**
+     * Set the token value for the "remember me" session.
+     *
+     * @param  string  $value
+     * @return void
+     */
+    public function setRememberToken($value)
+    {
+        $this->remember_token = $value;
+    }
+
+    /**
+     * Get the column name for the "remember me" token.
+     *
+     * @return string
+     */
+    public function getRememberTokenName()
+    {
+        return 'remember_token';
+    }
+
+    public function agentAllocation()
+    {
+        return $this->hasMany(AgentAllocation::class, 'agent_id', 'id');
+    }
+
+    public function getSaccoDataAttribute()
+    {
+        // Retrieve all allocated saccos for the agent
+        $allocatedSaccos = $this->agentAllocation->pluck('sacco_id');
+
+        // Retrieve Sacco data based on allocated saccos
+        $saccoData = Sacco::whereIn('id', $allocatedSaccos)->get();
+
+        return $saccoData;
+    }
 
     public function district()
     {

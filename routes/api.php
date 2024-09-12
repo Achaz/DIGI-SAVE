@@ -29,10 +29,12 @@ Route::get("share-records", [ApiResurceController::class, "share_records"]);
 Route::post("share-records", [ApiResurceController::class, "share_record_create"]);
 Route::get("social-funds", [ApiResurceController::class, "socialFundRecords"]);
 Route::post("social-funds", [ApiResurceController::class, "socialFundCreate"]);
+Route::post("request-agent-otp-sms", [ApiResurceController::class, "request_otp_sms"]);
 Route::post("request-otp-sms", [ApiResurceController::class, "request_otp_sms"]);
 Route::get("transactions", [ApiResurceController::class, "transactions"]);
 Route::get("loan-transactions", [ApiResurceController::class, "loan_transactions"]);
 Route::get("saccos", [ApiResurceController::class, "saccos"]);
+Route::get("agent-allocation", [ApiResurceController::class, "agent_allocations"]);
 Route::get("eligibleMembers", [ApiResurceController::class, "eligible_members"]);
 Route::post("sacco-join-request", [ApiResurceController::class, "sacco_join_request"]);
 Route::POST("transactions-create", [ApiResurceController::class, "transactions_create"]);
@@ -42,6 +44,10 @@ Route::POST("transactions-transfer", [ApiResurceController::class, "transactions
 Route::get('district', [ApiResurceController::class, 'get_districts']);
 Route::get('parish', [ApiResurceController::class, 'get_parishes']);
 Route::get('village', [ApiResurceController::class, 'get_villages']);
+
+
+Route::post("agent-meeting", [ApiResurceController::class, "scheduleMeeting"]);
+Route::get("agent-meeting", [ApiResurceController::class, "get_agent_meetings"]);
 
 
 Route::get("sacco-members", [ApiResurceController::class, "sacco_members"]);
@@ -61,19 +67,23 @@ Route::POST("garden-activities", [ApiResurceController::class, "activity_submit"
 
 Route::get("crops", [ApiResurceController::class, "crops"]);
 Route::get('sacco/{sacco_id}', [ApiResurceController::class, 'getSaccoData']);
+Route::get('cycle-history', [ApiResurceController::class, 'getMemberDetailsByCycle']);
+Route::get('agent-saccos/{saccoIds}', [ApiResurceController::class, 'agent_saccos']);
 
 
 
 
 
 Route::POST("users/login", [ApiAuthController::class, "login"]);
-Route::POST("login", [ApiAuthController::class, "agent_login"]);
+Route::POST("login", [ApiAuthController::class, "login"]);
 Route::POST("shareout", [ApiAuthController::class, "new_shareout"]);
 Route::POST("users/register", [ApiAuthController::class, "register"]);
 Route::post('positions', [ApiAuthController::class, 'new_position']);
 Route::post('groups/register', [ApiAuthController::class, 'registerGroup']);
 Route::post('roles/register', [ApiAuthController::class, 'registerRole']);
 Route::POST("users/update", [ApiAuthController::class, "update_user"]);
+Route::POST("group/update", [ApiAuthController::class, "update_group"]);
+Route::POST("member/update", [ApiAuthController::class, "member_update"]);
 Route::get("people", [ApiResurceController::class, "people"]);
 Route::POST("people", [ApiResurceController::class, "person_create"]);
 Route::get("jobs", [ApiResurceController::class, "jobs"]);
